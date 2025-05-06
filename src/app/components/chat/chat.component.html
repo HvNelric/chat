@@ -1,0 +1,46 @@
+<div>
+    <div class="chat-history">
+        @for (message of history(); track $index) {
+          <div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+            <div class="message-header">
+              <span class="role-icon">{{ message.role === 'user' ? '👤' : '🤖' }}</span>
+              <strong>{{ message.role === 'user' ? 'Vous' : 'Assistant' }}</strong>
+            </div>
+            <div class="message-content">
+                <markdown [data]="message.content"></markdown>
+            </div>
+          </div>
+        }
+        @if (currentResponse && isLoading) {
+          <div class="message assistant">
+            <div class="message-header">
+              <span class="role-icon">🤖</span>
+              <strong>Assistant</strong>
+            </div>
+            <div class="message-content">
+              <markdown [data]="currentResponse"></markdown>
+              <div class="typing-indicator">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+    <textarea name="text" id="text-input" rows="5" [(ngModel)]="userInput" (keydown.enter)="submit()"></textarea>
+    <button (click)="clear()">clear</button>
+    @if (isLoading) {
+        <span>Envoi...</span>
+      } @else {
+        <span>Envoyer</span>
+      }
+  </div>
+  @if(imagePreview && imagePreview !== ""){
+    <div class="image-preview" style="width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; margin-top: 30px; overflow: hidden;">
+        <img [src]="imagePreview" alt="Preview" style="width: 100%;">
+
+    </div>
+    <button (click)="removeImage()">×</button>
+  }
+  <input type="file" id="fileInput" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+  <label for="fileInput" class="file-button" style="width: 30px; height: 30px;">📷</label>
