@@ -1,1 +1,73 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+    font-size: 10px;
+
+    --test: #0d1b2a;
+    --test: #1b263b;
+    --test: #415a77;
+    --test: #778da9;
+    --test: #e0e1dd;
+
+    --dbg: #002029;
+    --chat-ia: #005066;//#fcd5ce;
+    --chat-user: #ffb4a2;
+    --console: #00303d;
+    --daction: #004052;
+    --action: #005066;
+    --fill: #6d6875;
+    --btn: #ffcdb2;
+    --txt: #fefae0;
+    --btxt: #00607a;
+    --ctxt: #e0e1dd;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-size: 1.4rem;
+    font-family: Helvetica, sans-serif;
+    background: var(--dbg);
+    margin: 0;
+}
+
+h3 {
+    font-size: 1.8rem;
+    margin-top: 40px;
+    color: var(--chat-user);
+}
+
+p {
+    margin: 0;
+}
+
+hr {
+    margin: 20px 0;
+}
+
+.btn {
+    outline: none;
+    color: var(--fill);
+    background: var(--btn);
+    padding: 0;
+    border: none;
+    cursor: pointer;
+
+    &.rounded {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+}
+
+.absolute {
+    position: absolute;
+    padding: 10px;
+    border-radius: 25px;
+}
+
+svg {
+    fill: var(--fill);
+}

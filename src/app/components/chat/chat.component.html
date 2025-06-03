@@ -1,46 +1,101 @@
-<div>
-    <div class="chat-history">
-        @for (message of history(); track $index) {
-          <div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
-            <div class="message-header">
-              <span class="role-icon">{{ message.role === 'user' ? '👤' : '🤖' }}</span>
-              <strong>{{ message.role === 'user' ? 'Vous' : 'Assistant' }}</strong>
-            </div>
-            <div class="message-content">
-                <markdown [data]="message.content"></markdown>
-            </div>
-          </div>
-        }
-        @if (currentResponse && isLoading) {
-          <div class="message assistant">
-            <div class="message-header">
-              <span class="role-icon">🤖</span>
-              <strong>Assistant</strong>
-            </div>
-            <div class="message-content">
-              <markdown [data]="currentResponse"></markdown>
-              <div class="typing-indicator">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-        }
+<div id="chat">
+  <div class="chat-history {{history().length > 1 ? 'fixe' : 'debut'}}" 
+    [class.preview]="history().length > 1 && imagePreview && imagePreview !== ''" 
+    #messageContainer
+  >
+    @for (message of history(); track $index) {
+      @if(message.role === "user" || message.role === "assistant") {<div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'" [class.last]="history().length - 1 === $index">
+      @if(message.role === "user") {<div class="message-header">
+        <img [src]="svgUser" alt="Utilisateur">
+      </div>}
+      @if(message.role === "assistant") {<div class="message-header">
+        <img [src]="svgIa" alt="Assistant">
+      </div>}
+      <div class="message-content">
+        <markdown [data]="message.content"></markdown>
       </div>
-
-    <textarea name="text" id="text-input" rows="5" [(ngModel)]="userInput" (keydown.enter)="submit()"></textarea>
-    <button (click)="clear()">clear</button>
-    @if (isLoading) {
-        <span>Envoi...</span>
-      } @else {
-        <span>Envoyer</span>
-      }
-  </div>
-  @if(imagePreview && imagePreview !== ""){
-    <div class="image-preview" style="width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; margin-top: 30px; overflow: hidden;">
-        <img [src]="imagePreview" alt="Preview" style="width: 100%;">
-
+    </div>}
+    }
+    @if (currentResponse && isLoading) {
+    <div class="message stream assistant">
+      <div class="message-header">
+        <img [src]="svgIa" alt="Assistant">
+      </div>
+      <div class="message-content">
+        <markdown [data]="currentResponse"></markdown>
+      </div>
     </div>
-    <button (click)="removeImage()">×</button>
-  }
-  <input type="file" id="fileInput" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
-  <label for="fileInput" class="file-button" style="width: 30px; height: 30px;">📷</label>
+    }
+    @if(!isLoading && history().length > 1 && currentResponse === '') {
+    <button class="btn btn-new-chat" (click)="clear()">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+        <path
+          d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z" />
+      </svg>
+      <span>Nouvelle discussion</span>
+    </button>
+    }
+  </div>
+
+  <div class="inputs-container {{history().length > 1 ? 'fixed' : ''}}">
+    @if(isLoading) {<div class="typing-indicator">
+      <span></span><span></span><span></span>
+    </div>}
+    <div class="input-wrapper">
+
+      @if(imagePreview && imagePreview !== ""){ 
+        <div class="image-preview">
+          <img [src]="imagePreview" alt="Preview" style="width: 100%;">
+          <button class="btn rounded btn-del-img" (click)="removeImage()">×</button>
+        </div>
+      }
+
+      <textarea 
+        name="text" 
+        id="txtarea" 
+        rows="2" 
+        appTextareaResize
+        [maxRows]="6"
+        placeholder="Posez-moi une question"
+        [(ngModel)]="userInput" 
+        (keydown.enter)="submit($event)"
+        [disabled]="isLoading"
+        autofocus
+      >
+      </textarea>
+      <div class="btn-container">
+        <div class="wrapper">
+          <input type="file" id="fileInput" accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+          <label for="fileInput" class="btn rounded btn-file">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+              <path
+                d="M480-480ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h320v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm40-160h480L570-480 450-320l-90-120-120 160Zm480-280v-167l-64 63-56-56 160-160 160 160-56 56-64-63v167h-80Z" />
+            </svg>
+          </label>
+          <button 
+            type="button" 
+            class="btn rounded btn-record" 
+            [class.recording]="isRecording"
+            (click)="isRecording ? stopRecording() : startRecording()"
+            [disabled]="isLoading"
+          >
+            @if(isRecording) {
+              <div class="recording-indicator"></div>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="#e3e3e3">
+                <path d="M480-400q-50 0-85-35t-35-85v-240q0-50 35-85t85-35q50 0 85 35t35 85v240q0 50-35 85t-85 35Zm0-240Zm-40 520v-123q-104-14-172-93t-68-184h80q0 83 58.5 141.5T480-320q83 0 141.5-58.5T680-520h80q0 105-68 184t-172 93v123h-80Zm40-360q17 0 28.5-11.5T520-520v-240q0-17-11.5-28.5T480-800q-17 0-28.5 11.5T440-760v240q0 17 11.5 28.5T480-480Z"/>
+              </svg>
+            }
+          </button>
+        </div>
+        <button type="button" class="btn rounded" (click)="submit($event)">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+            <path
+              d="M400-240q-33 0-56.5-23.5T320-320v-50q-57-39-88.5-100T200-600q0-117 81.5-198.5T480-880q117 0 198.5 81.5T760-600q0 69-31.5 129.5T640-370v50q0 33-23.5 56.5T560-240H400Zm0-80h160v-92l34-24q41-28 63.5-71.5T680-600q0-83-58.5-141.5T480-800q-83 0-141.5 58.5T280-600q0 49 22.5 92.5T366-436l34 24v92Zm0 240q-17 0-28.5-11.5T360-120v-40h240v40q0 17-11.5 28.5T560-80H400Zm80-520Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
