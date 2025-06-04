@@ -6,10 +6,14 @@
     @for (message of history(); track $index) {
       @if(message.role === "user" || message.role === "assistant") {<div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'" [class.last]="history().length - 1 === $index">
       @if(message.role === "user") {<div class="message-header">
-        <img [src]="svgUser" alt="Utilisateur">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+          <path
+            d="M320-360h320v-22q0-45-44-71.5T480-480q-72 0-116 26.5T320-382v22Zm160-160q33 0 56.5-23.5T560-600q0-33-23.5-56.5T480-680q-33 0-56.5 23.5T400-600q0 33 23.5 56.5T480-520ZM320-120v-80H160q-33 0-56.5-23.5T80-280v-480q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v480q0 33-23.5 56.5T800-200H640v80H320ZM160-280h640v-480H160v480Zm0 0v-480 480Z"/></svg>
       </div>}
       @if(message.role === "assistant") {<div class="message-header">
-        <img [src]="svgIa" alt="Assistant">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+          <path
+            d="M323-160q-11 0-20.5-5.5T288-181l-78-139h58l40 80h92v-40h-68l-40-80H188l-57-100q-2-5-3.5-10t-1.5-10q0-4 5-20l57-100h104l40-80h68v-40h-92l-40 80h-58l78-139q5-10 14.5-15.5T323-800h97q17 0 28.5 11.5T460-760v160h-60l-40 40h100v120h-88l-40-80h-92l-40 40h108l40 80h112v200q0 17-11.5 28.5T420-160h-97Zm217 0q-17 0-28.5-11.5T500-200v-200h112l40-80h108l-40-40h-92l-40 80h-88v-120h100l-40-40h-60v-160q0-17 11.5-28.5T540-800h97q11 0 20.5 5.5T672-779l78 139h-58l-40-80h-92v40h68l40 80h104l57 100q2 5 3.5 10t1.5 10q0 4-5 20l-57 100H668l-40 80h-68v40h92l40-80h58l-78 139q-5 10-14.5 15.5T637-160h-97Z"/></svg>
       </div>}
       <div class="message-content">
         <markdown [data]="message.content"></markdown>
@@ -19,14 +23,17 @@
     @if (currentResponse && isLoading) {
     <div class="message stream assistant">
       <div class="message-header">
-        <img [src]="svgIa" alt="Assistant">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="40px" fill="000000">
+          <path
+            d="M240-80v-172q-57-52-88.5-121.5T120-520q0-150 105-255t255-105q125 0 221.5 73.5T827-615l52 205q5 19-7 34.5T840-360h-80v120q0 33-23.5 56.5T680-160h-80v80h-80v-160h160v-200h108l-38-155q-23-91-98-148t-172-57q-116 0-198 81t-82 197q0 60 24.5 114t69.5 96l26 24v208h-80Zm254-360Zm-54 80h80l6-50q8-3 14.5-7t11.5-9l46 20 40-68-40-30q2-8 2-16t-2-16l40-30-40-68-46 20q-5-5-11.5-9t-14.5-7l-6-50h-80l-6 50q-8 3-14.5 7t-11.5 9l-46-20-40 68 40 30q-2 8-2 16t2 16l-40 30 40 68 46-20q5 5 11.5 9t14.5 7l6 50Zm40-100q-25 0-42.5-17.5T420-520q0-25 17.5-42.5T480-580q25 0 42.5 17.5T540-520q0 25-17.5 42.5T480-460Z" />
+        </svg>
       </div>
       <div class="message-content">
         <markdown [data]="currentResponse"></markdown>
       </div>
     </div>
     }
-    @if(!isLoading && history().length > 1 && currentResponse === '') {
+    @if(!isLoading && history().length > 1 && currentResponse === '' && !isAudioLoading) {
     <button class="btn btn-new-chat" (click)="clear()">
       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
         <path
@@ -41,6 +48,15 @@
     @if(isLoading) {<div class="typing-indicator">
       <span></span><span></span><span></span>
     </div>}
+
+    @if(isAudioLoading){
+      <div class="audio-loading">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+          <path
+            d="M722-322q-56-53-89-125t-33-153q0-81 33-153t89-125l62 64q-44 41-69 96t-25 118q0 63 25 119t69 97l-62 62Zm128-128q-32-29-50-67.5T782-600q0-44 18-82.5t50-67.5l64 64q-18 17-29 38.5T874-600q0 26 11 47.5t29 38.5l-64 64Zm-490 10q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-120v-112q0-33 17-62t47-44q51-26 115-44t141-18q77 0 141 18t115 44q30 15 47 44t17 62v112H40Zm80-80h480v-32q0-11-5.5-20T580-266q-36-18-92.5-36T360-320q-71 0-127.5 18T140-266q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-600q0-33-23.5-56.5T360-680q-33 0-56.5 23.5T280-600q0 33 23.5 56.5T360-520Zm0-80Zm0 400Z" />
+        </svg>
+      </div>
+    }
     <div class="input-wrapper">
 
       @if(imagePreview && imagePreview !== ""){ 
@@ -54,6 +70,7 @@
         name="text" 
         id="txtarea" 
         rows="2" 
+        #textArea
         appTextareaResize
         [maxRows]="6"
         placeholder="Posez-moi une question"
@@ -63,6 +80,7 @@
         autofocus
       >
       </textarea>
+
       <div class="btn-container">
         <div class="wrapper">
           <input type="file" id="fileInput" accept="image/*" (change)="onFileSelected($event)" style="display: none;">

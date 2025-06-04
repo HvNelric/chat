@@ -3,7 +3,7 @@
 
   .chat-history {
     overflow-y: auto;
-    padding: 10px 50px 50px 50px;
+    padding: 50px 20% 50px 20%;
 
     &.debut {
       min-height: 50vh;
@@ -21,17 +21,22 @@
 
     .message {
       border-radius: 8px;
+      position: relative;
 
       .message-header {
         margin-bottom: 15px;
         width: 40px;
         height: 40px;
-        border-radius: 50%;
         display: flex;
         justify-content: center;
         align-items: center;
+        position: absolute;
+        top: 0;
 
-        img {
+        svg {
+          width: 40px;
+          height: 40px;
+          fill: var(--btn);
           filter: drop-shadow(0px 2px 1px rgba(0, 0, 0, .5));
         }
       }
@@ -47,10 +52,14 @@
           width: 0px;
           height: 0px;
           position: absolute;
-          top: -7px;
+          top: 15px;
           border-style: solid;
           border-width: 0 10px 8px 10px;
-          transform: rotate(0deg);
+          //transform: rotate(0deg);
+        }
+
+        p {
+          margin-bottom: 10px !important;
         }
       }
 
@@ -63,13 +72,13 @@
         display: flex;
         flex-direction: column;
         align-items: flex-end;
+        padding-right: 60px;
 
         .message-header {
-          background: var(--chat-user);
-          transform: scaleX(-1);
+          right: 0;
 
-          img{
-            fill: red;
+          svg {
+            fill: var(--chat-user);
           }
         }
 
@@ -80,20 +89,27 @@
 
           &::after {
             right: 10px;
-            border-color: transparent transparent var(--dsalmon) transparent;
+            border-color: transparent transparent var(--chat-user) transparent;
+            right: -13px;
+            transform: rotate(90deg);
           }
         }
       }
 
       &.assistant {
-        margin-bottom: 30px;
+        margin-bottom: 50px;
+        padding-left: 60px;
 
         .message-header {
-          background: var(--chat-ia);
+          left: 0;
+
+          svg {
+            fill: var(--action);
+          }
         }
 
         .message-content {
-          background: var(--chat-ia);
+          background: transparent;
           color: var(--ctxt);
 
             h3,
@@ -105,7 +121,9 @@
 
           &::after {
             left: 10px;
-            border-color: transparent transparent var(--chat-ia) transparent;
+            border-color: transparent transparent transparent transparent;
+            left: -13px;
+            transform: rotate(-90deg);
           }
         }
 
@@ -134,8 +152,9 @@
     &.fixed {
       position: fixed;
       bottom: 0;
-      width: 100%;
-      padding-bottom: 10px;
+      left: 0;
+      right: 0;
+      padding: 0 20% 10px 20%;
     }
 
     .input-wrapper {
@@ -217,27 +236,43 @@
 
 /////////////////////////////
 
-code {
-  background-color: rgba(175, 184, 193, 0.2);
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+.message-content {
+
+  markdown {
+
+  code {
+    background-color: rgba(175, 184, 193, 0.2);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; 
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0; 
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+  p {
+    margin-bottom: 20px;
+  }
+
+  li {
+    margin-bottom: 10px !important;
+  }
+
 }
 
-.message-content table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.message-content th,
-.message-content td {
-  border: 1px solid #ddd;
-  padding: 8px 12px;
-}
-
-.message-content tr:nth-child(even) {
-  background-color: #f2f2f2;
 }
 
 .controls {
@@ -263,7 +298,7 @@ button:disabled {
   top: -45px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--grey);
+  background: var(--bg);
   padding-bottom: 7px;
 
   span {
@@ -282,6 +317,36 @@ button:disabled {
     &:nth-child(2) {
       animation-delay: -0.16s;
     }
+  }
+}
+
+.audio-loading {
+  width: 80px;
+  height: 30px;
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  svg {
+    fill: var(--btn);
+    animation: scaled 1.4s infinite ease-in-out both;
+  }
+}
+
+@keyframes scaled {
+
+  0%,
+  80%,
+  100% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.2);
   }
 }
 

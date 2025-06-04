@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ElementRef, ViewChild, AfterViewChecked, HostListener } from '@angular/core';
+import { Component, inject, OnInit, ElementRef, ViewChild, AfterViewChecked, signal, AfterViewInit } from '@angular/core';
 import { ChatService, MessageType } from '../../services/chat.service';
 import { AudioService } from '../../services/audio.service';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
@@ -15,12 +15,13 @@ import { fromEvent, Subscription } from 'rxjs';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit, AfterViewInit, AfterViewChecked {
   private chatService = inject(ChatService);
   private audioService = inject(AudioService);
   
-  userInput = '';
+  userInput = signal("");
   isLoading = false;
+  isAudioLoading = false;
   currentResponse = '';
   history = this.chatService.getHistory();
   isRecording = false;
@@ -35,6 +36,8 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
   selectedFile: File | null = null;
   imagePreview: string | null = null;
+
+  @ViewChild('textArea') textareaRef!: ElementRef<HTMLTextAreaElement>;
 
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
   userScrolledUp = false;
@@ -53,6 +56,18 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   ngAfterViewChecked() {
     //if(this.isLoading) this.scrollToBottom()
     //console.log('view ')
+  }
+
+  ngAfterViewInit() {
+    this.focusTextarea();
+  }
+
+  focusTextarea() {
+    this.textareaRef.nativeElement.focus();
+  }
+
+  onTextareaChange(newValue: string) {
+    this.userInput.set(newValue);
   }
 
   scrollToBottom() {
@@ -98,14 +113,14 @@ export class ChatComponent implements OnInit, AfterViewChecked {
   }
 
   async sendImg() {
-    if (!this.userInput.trim()) return;
+    if (!this.userInput().trim()) return;
 
     this.isLoading = true;
     this.currentResponse = '';
     console.log("history22", this.history())
 
     try {
-      const stream = await this.chatService.chatWithImage(this.userInput, this.selectedFile ?  this.selectedFile : null);
+      const stream = await this.chatService.chatWithImage(this.userInput(), this.selectedFile ?  this.selectedFile : null);
       const reader = stream.getReader();
       
       while (true) {
@@ -119,7 +134,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
       this.currentResponse = 'Une erreur est survenue.';
     } finally {
       this.isLoading = false;
-      this.userInput = '';
+      this.userInput.set("")
       this.currentResponse = "";
       this.scrollToBottom()
       console.log("history33", this.history())
@@ -150,66 +165,33 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') return;
 
     this.isRecording = false;
+    this.isAudioLoading = true;
 
     return new Promise<void>((resolve) => {
       if (this.mediaRecorder) {
         this.mediaRecorder.onstop = async () => {
           try {
             const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-            this.isLoading = true;
+            //this.isLoading = true;
 
             // Ajouter un message temporaire pour l'audio en cours de traitement
-            this.chatService.conversationHistory.update(history => [
-              ...history,
-              {
-                role: 'user',
-                content: 'Audio en cours de traitement...'
-              }
-            ]);
+            // this.chatService.conversationHistory.update(history => [
+            //   ...history,
+            //   {
+            //     role: 'user',
+            //     content: 'Audio en cours de traitement...'
+            //   }
+            // ]);
 
-            const { text, stream } = await this.audioService.sendAudioToServer(audioBlob);
+            const {text, taille} = await this.audioService.sendAudioToServer(audioBlob);
 
-            // Mettre à jour le message utilisateur avec la transcription
-            this.chatService.conversationHistory.update(history => {
-              const newHistory = [...history];
-              newHistory[newHistory.length - 1] = {
-                role: 'user',
-                content: `🎤 ${text}`
-              };
-              return newHistory;
-            });
-
-            // Ajouter un message vide pour la réponse de l'assistant
-            this.chatService.conversationHistory.update(history => [
-              ...history,
-              {
-                role: 'assistant',
-                content: ''
-              }
-            ]);
-
-            // Traiter la réponse en streaming
-            const reader = stream.getReader();
+            console.log("text", text)
             
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                // Mettre à jour le dernier message de l'assistant avec le nouveau contenu
-                this.chatService.conversationHistory.update(history => {
-                  const newHistory = [...history];
-                  const lastMessage = newHistory[newHistory.length - 1];
-                  if (lastMessage.role === 'assistant') {
-                    lastMessage.content += value;
-                  }
-                  return newHistory;
-                });
-
-                this.scrollToBottom();
-              }
-            } finally {
-              reader.releaseLock();
+            if(text){
+              this.userInput.set(text)
+              console.log("input", this.userInput())
+              this.isAudioLoading = false;
+              this.focusTextarea()
             }
 
           } catch (error) {
@@ -221,14 +203,15 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 content: 'Une erreur est survenue lors du traitement audio.'
               }
             ]);
-          } finally {
-            this.isLoading = false;
-            this.isRecording = false;
-            if (this.mediaRecorder?.stream) {
-              this.audioService.stopMediaTracks(this.mediaRecorder.stream);
-            }
-            resolve();
-          }
+          } 
+          // finally {
+          //   this.isLoading = false;
+          //   this.isRecording = false;
+          //   if (this.mediaRecorder?.stream) {
+          //     this.audioService.stopMediaTracks(this.mediaRecorder.stream);
+          //   }
+          //   resolve();
+          // }
         };
 
         this.mediaRecorder.stop();

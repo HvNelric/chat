@@ -18,7 +18,7 @@ export class AudioService {
    * @param audioBlob The audio blob to be sent
    * @returns Promise with the transcription and response stream
    */
-  async sendAudioToServer(audioBlob: Blob): Promise<{ text: string, stream: ReadableStream<string> }> {
+  async sendAudioToServer(audioBlob: Blob): Promise<{text: string, taille: string}> {
     try {
       const response = await fetch(`${this.apiUrl}/audio`, {
         method: 'POST',
@@ -34,52 +34,12 @@ export class AudioService {
 
       const data = await response.json();
       
-      // Créer un nouveau stream pour la réponse GPT
-      const gptResponse = await fetch(`${this.apiUrl}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: data.text
-            }
-          ]
-        })
-      });
-
-      if (!gptResponse.ok) {
-        throw new Error(`HTTP error! status: ${gptResponse.status}`);
-      }
-
-      // Créer un nouveau ReadableStream qui convertit les Uint8Array en string
-      const textStream = new ReadableStream({
-        async start(controller) {
-          const reader = gptResponse.body!.getReader();
-          const decoder = new TextDecoder();
-
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              
-              const text = decoder.decode(value, { stream: true });
-              if (text) controller.enqueue(text);
-            }
-          } finally {
-            controller.close();
-            reader.releaseLock();
-          }
-        }
-      });
-
-      // Retourner la transcription et le stream de la réponse
+      console.log("SERVICE AUDIO : ", data.text)
       return {
-        text: data.text,
-        stream: textStream
+        text: data.text, 
+        taille: data.taille
       };
+
     } catch (error) {
       console.error('Error sending audio:', error);
       throw error;
